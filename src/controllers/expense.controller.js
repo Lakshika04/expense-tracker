@@ -37,4 +37,30 @@ const updateExpense=async(req,res)=>{
    }
 }
 
-export{addExpense,getExpense,updateExpense}
+const deleteExpense=async(req,res)=>{
+  try {
+    await Expense.findByIdAndDelete(req.params.id)
+    res.status(200).json({message:"expense deleted successfully"})
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({message:error.message})
+  }
+}
+
+
+const getTotalExpense= async(req,res)=>{
+  try {
+    const userId=req.user._id;
+    const total= await Expense.aggregate([
+      {$match:{user: userId}},
+      {$group:{_id:null,totalAmount:{$sum:"$amount"}}},
+
+    ])
+    const totalAmount= total.length>0 ? total[0].totalAmount:0;
+    res.status(200).json({message:"total calculated successfully",totalAmount})
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({message:error.message})
+  }
+}
+export{addExpense,getExpense,updateExpense,deleteExpense,getTotalExpense}
